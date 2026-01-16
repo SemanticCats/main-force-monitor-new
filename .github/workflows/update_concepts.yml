@@ -1,0 +1,25 @@
+name: 🌐 每日更新主线板块
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 北京时间10:00
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: pip install akshare pandas -i https://pypi.tuna.tsinghua.edu.cn/simple
+      - run: python auto_concepts.py
+      - run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add auto_concepts.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto update concepts $(date)"
+            git push
+          fi
