@@ -2,7 +2,7 @@ name: 🕒 每日主力监控
 
 on:
   schedule:
-    - cron: '0 10 * * *'   
+    - cron: '0 10 * * *'  # UTC 时间 10:00 = 北京时间 18:00 
   workflow_dispatch:
 
 jobs:
