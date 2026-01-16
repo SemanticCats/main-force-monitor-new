@@ -2,7 +2,7 @@ name: 🔄 每周更新龙头股
 
 on:
   schedule:
-    - cron: '0 1 * * 1'  # 每周一北京时间9:00
+    - cron: '0 1 * * 1'  
   workflow_dispatch:
 
 jobs:
