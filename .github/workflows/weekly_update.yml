@@ -2,45 +2,45 @@ name: 🔄 每周更新龙头股
 
 on:
   schedule:
-    # 每周一凌晨 01:00 (北京时间) 运行
-    - cron: '0 1 * * 1'  
+    - cron: '0 1 * * 1'  # 周一凌晨 1点 (UTC时间，对应北京时间上午9点)
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      # 1. 检出代码 (必须)
       - uses: actions/checkout@v4
 
-      # 2. 设置 Python 环境
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # 3. 安装依赖库
-      # 使用清华源加速下载
       - name: Install dependencies
         run: |
           pip install akshare pandas -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-      # 4. 运行 Python 脚本
-      # 这一步会生成 auto_leaders.json 文件
       - name: Run update script
         run: |
           python update_leaders.py
 
-      # 5. 提交更新的文件 (如果有的话)
-      # 修正了缩进，并添加了错误忽略，防止因为没有更改而报错
+      # --- 关键修改点：使用 git diff 判断是否有变更 ---
       - name: Commit and Push
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add auto_leaders.json
-          # 只有当文件有变化时才提交，或者如果没有变化也不报错
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
+
+          # 1. 检查文件是否存在且有变化
+          if [ -f auto_leaders.json ]; then
+            git add auto_leaders.json
+            # 如果有修改，才会进行 commit
+            if git diff --staged --quiet; then
+              echo "ℹ️ auto_leaders.json 无变化，跳过提交"
+            else
+              git commit -m "Auto update leaders $(date +%Y-%m-%d)"
+              git push
+            fi
           else
-            git commit -m "Auto update leaders $(date)"
-            git push
+            echo "⚠️ auto_leaders.json 文件未生成！请检查日志。"
+            # 如果文件不存在，创建一个空文件防止下次报错（可选）
+            # echo "{}" > auto_leaders.json
           fi
